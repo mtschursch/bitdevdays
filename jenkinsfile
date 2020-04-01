@@ -1,0 +1,124 @@
+#!/usr/bin/env groovy
+pipeline {
+    agent any
+    tools {
+        maven 'apache-maven-3.6.3'
+        jdk 'Java_8_212'
+    }
+
+    triggers {  pollSCM 'H/15 * * * *' }
+
+    options{
+        disableConcurrentBuilds()
+    }
+
+    environment {
+        JAVA_HOME = "${jdk}"
+    }
+
+    parameters{
+        choice( name: 'BRANCH_NAME', choices: ['develop', 'qa', 'preproduction', 'production'], description: 'select stage')
+    }
+
+    stages {
+        stage("Git checkout") {
+            steps {
+                sh 'echo LEEEEEEEEERRRROOOOOOYYYYY JEEEEEEENNNNNNNKIIIINNNS!!!!!!!'
+                checkout changelog: false, scm: [$class: 'GitSCM', branches: [[name: BRANCH_NAME]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '8bbed9fa-020a-4fab-a695-e5b92af8f0f8', url: 'ssh://git@git.bridging-it.de:7999/enbw/occ-ocppj16.git']]]
+                sh 'git config user.email "jenkins@bridging-it.de"'
+                sh 'git config user.name "Jenkins (OCC Preproduction Release Job)"'
+                script {
+                    env.GIT_AN = "${sh(script:'git log -1 --pretty=format:"%an"', returnStdout: true)}"
+                }
+                sh 'echo "git an: ${GIT_AN}"'
+            }
+        }
+
+        stage("Maven clean") {
+            steps {
+                sh "mvn -B clean"
+            }
+        }
+
+        stage("Maven release prepare and perform") {
+            when {
+                expression{
+                    return (GIT_AN != 'git' && BRANCH_NAME == 'TestPreprod')
+                }
+            }
+            steps {
+                sh 'echo ${GIT_AN}'
+                sh 'echo ${BRANCH_NAME}'
+                sh "git checkout develop"
+                sh "mvn -B release:prepare"
+                sh "mvn -B release:perform"
+                sh 'git push'
+                sh "git checkout TestQA"
+                sh "git merge develop"
+                sh 'git push'
+                sh "git checkout TestPreprod"
+                sh "git merge TestQA"
+                sh 'git push'
+            }
+        }
+
+        stage("Maven install"){
+            when {
+                not{
+                    expression{
+                        return (GIT_AN != 'git' && BRANCH_NAME == 'TestPreprod')
+                    }
+                }
+            }
+            steps {
+                sh 'echo ${GIT_AN}'
+                sh 'echo ${BRANCH_NAME}'
+                sh "mvn -B install"
+            }
+        }
+
+        stage ("archive artifacts"){
+            steps{
+                script{
+                    try{
+                        archiveArtifacts artifacts: "**/target/*.jar"
+                    } catch (error) {
+                        echo error.getMessage()
+                        echo "INFO: archive artifacts for docker failed: No artifacts found"
+                    } finally {
+                        echo "INFO: archive artifacts for docker finished"
+                    }
+                }
+            }
+        }
+
+        stage ("prepare artifacts for docker"){
+            steps{
+                sh 'echo "listing workspace:"'
+                sh 'ls -l'
+                dir("docker-target"){
+                    sh 'echo "docker-target directory before preparing:"'
+                    sh 'ls -l'
+                    sh 'cp ../ocppj16-services/target/ocppj16-services-*.war ./ocppj16-services.war '
+                    sh 'echo "docker-target directory after preparing:"'
+                    sh 'ls -l'
+                }
+            }
+        }
+
+        stage ("archive artifacts for docker"){
+            steps{
+                script{
+                    try{
+                        archiveArtifacts artifacts: "**/docker-target/*"
+                    } catch (error) {
+                        echo error.getMessage()
+                        echo "INFO: archive artifacts for docker failed: No artifacts found"
+                    } finally {
+                        echo "INFO: archive artifacts for docker finished"
+                    }
+                }
+            }
+        }
+    }
+}
