@@ -24,9 +24,9 @@ pipeline {
         stage("Git checkout") {
             steps {
                 sh 'echo LEEEEEEEEERRRROOOOOOYYYYY JEEEEEEENNNNNNNKIIIINNNS!!!!!!!'
-                checkout changelog: false, scm: [$class: 'GitSCM', branches: [[name: BRANCH_NAME]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '8bbed9fa-020a-4fab-a695-e5b92af8f0f8', url: 'ssh://git@git.bridging-it.de:7999/enbw/occ-ocppj16.git']]]
-                sh 'git config user.email "jenkins@bridging-it.de"'
-                sh 'git config user.name "Jenkins (OCC Preproduction Release Job)"'
+                checkout changelog: false, scm: [$class: 'GitSCM', branches: [[name: BRANCH_NAME]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'Jenkins4Gitlab', url: 'http://nachtaktiv.ddns.net:90/bkuehne/jenkinsfiledemonstration']]]
+                sh 'git config user.email "jenkins@nachtaktiv.ddns.net"'
+                sh 'git config user.name "Leeeeeroy Jenkins"'
                 script {
                     env.GIT_AN = "${sh(script:'git log -1 --pretty=format:"%an"', returnStdout: true)}"
                 }
