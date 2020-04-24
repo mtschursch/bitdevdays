@@ -9,6 +9,7 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
     <build>
+        <scriptSourceDirectory>src/main/groovy</scriptSourceDirectory>
         <finalName>AwesomeJenkinsDemo</finalName>
     </build>
 </project>
