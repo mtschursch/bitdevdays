@@ -80,7 +80,7 @@ pipeline() {
             steps{
                 script{
                     try{
-                        archiveArtifacts artifacts: "**/target/*.jar"
+                        archiveArtifacts artifacts: "**/target/*.war"
                     } catch (error) {
                         echo error.getMessage()
                         echo "INFO: archive artifacts for docker failed: No artifacts found"
@@ -98,7 +98,7 @@ pipeline() {
                 dir("docker-target"){
                     sh 'echo "docker-target directory before preparing:"'
                     sh 'ls -l'
-                    sh 'cp ../ocppj16-services/target/ocppj16-services-*.war ./ocppj16-services.war '
+                    sh 'cp ../JenkinsFileDemo/target/AwesomeJenkinsDemo.war ./AwesomeJenkinsDemo.war '
                     sh 'echo "docker-target directory after preparing:"'
                     sh 'ls -l'
                 }
