@@ -98,7 +98,7 @@ pipeline() {
                 dir("docker-target"){
                     sh 'echo "docker-target directory before preparing:"'
                     sh 'ls -l'
-                    sh 'cp ../JenkinsFileDemo/target/AwesomeJenkinsDemo.war ./AwesomeJenkinsDemo.war '
+                    sh 'cp ../target/AwesomeJenkinsDemo.war ./AwesomeJenkinsDemo.war '
                     sh 'echo "docker-target directory after preparing:"'
                     sh 'ls -l'
                 }
