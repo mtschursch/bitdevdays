@@ -1,5 +1,4 @@
-#!/usr/bin/env groovy
-node("Pipeline") {
+pipeline() {
     agent any
     tools {
         maven 'apache-maven-3.6.3'
